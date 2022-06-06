@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useId, useReducer, useTransition } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -6,6 +6,9 @@ import reportWebVitals from './reportWebVitals';
 import Content from './Content';
 import { useState, createContext } from 'react';
 import './App.css'
+import { useEffect } from 'react';
+import PropTypes from 'prop-types';
+
 
 //hello world!
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -711,6 +714,7 @@ class MyComponent extends React.Component {
 }
 //root.render(<MyComponent/>)
 
+//Fragments
 class Columns extends React.Component {
   render() {
     return (
@@ -722,6 +726,305 @@ class Columns extends React.Component {
   }
 }
 
+//JSX i Depth
+function test1(){
+  const test="asd";
+  return (<div>{test.length>0 && <p>khang</p>}</div>);
+}
+//root.render(test1());
+
+// The <Mouse> component encapsulates the behavior we need...
+class Cat extends React.Component {
+  render() {
+    const mouse = this.props.mouse;
+    return (
+      <img src="https://picsum.photos/10/20" style={{ position: 'absolute', left: mouse.x, top: mouse.y }} />
+    );
+  }
+}
+
+class Mouse extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.state = { x: 0, y: 0 };
+  }
+
+  handleMouseMove(event) {
+    this.setState({
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
+
+  render() {
+    return (
+      <div style={{ height: '100vh' }} onMouseMove={this.handleMouseMove}>
+
+        {/*
+          Instead of providing a static representation of what <Mouse> renders,
+          use the `render` prop to dynamically determine what to render.
+        */}
+        {this.props.render(this.state)}
+      </div>
+    );
+  }
+}
+
+class MouseTracker extends React.Component {
+  render() {
+    return (
+      <div>
+        <h1>Move the mouse around!</h1>
+        <Mouse render={mouse => (
+          <Cat mouse={mouse} />
+        )}/>
+      </div>
+    );
+  }
+}
+//root.render(<MouseTracker/>)
+
+
+// class Greeting1 extends React.Component {
+//   render() {
+//     return (
+//       <h1>Hello, {this.props.name}</h1>
+//     );
+//   }
+// }
+
+// Greeting1.propTypes = {
+//   name: PropTypes.string
+// };
+// root.render(<Greeting1 name={1}/>);
+// console.log(Greeting1.prototypes);
+
+
+//Hook
+
+function Example() {
+  // Declare a new state variable, which we'll call "count"
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
+// root.render(<Example/>)
+
+function FriendStatus(props) {
+  const [isOnline, setIsOnline] = useState(null);
+
+  function handleStatusChange(status) {
+    setIsOnline(status.isOnline);
+  }
+
+  // useEffect(() => {
+  //   ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
+  //   return () => {
+  //     ChatAPI.unsubscribeFromFriendStatus(props.friend.id, handleStatusChange);
+  //   };
+  // });
+
+  if (isOnline === null) {
+    return 'Loading...';
+  }
+  return isOnline ? 'Online' : 'Offline';
+}
+// root.render(<FriendStatus/>)s
+export const EffectDemo = () => {
+  //State
+  const [fullName, setFullName] = useState({name: 'name', familyName: 'family'});
+  const [title,setTitle] = useState('useEffect() in Hooks');
+
+  //useEffect
+  useEffect(() => {
+      console.log('useEffect has been called!');
+      setFullName({name:'TrungHC',familyName: 'HCT'});
+  },[fullName.name]);
+
+  return(
+      <div>
+          <h1>Title: {title}</h1>
+          <h3>Name: {fullName.name}</h3>
+          <h3>Family Name: {fullName.familyName}</h3>
+      </div>
+  );
+};
+//root.render(<EffectDemo/>)
+
+//Building Your Own Hooks
+
+function Counter({initialCount}) {
+  const [count, setCount] = useState(initialCount);
+  return (
+    <>
+      Count: {count}
+      <button onClick={() => setCount(initialCount)}>Reset</button>
+      <button onClick={() => setCount(prevCount => prevCount - 1)}>-</button>
+      <button onClick={() => setCount(prevCount => prevCount + 1)}>+</button>
+    </>
+  );
+}
+// useEffect(
+//   () => {
+//     const subscription = props.source.subscribe();
+//     return () => {
+//       subscription.unsubscribe();
+//     };
+//   },
+//   [props.source],
+// );
+
+
+// root.render(<Counter initialCount={8}/>)
+//clean up the subcription
+// useEffect(() => {
+//   const subscription = props.source.subscribe();
+//   return () => {
+//     // Clean up the subscription
+//     subscription.unsubscribe();
+//   };
+// });
+
+//Context 
+const themes = {
+  light: {
+    foreground: "#000000",
+    background: "#eeeeee"
+  },
+  dark: {
+    foreground: "#ffffff",
+    background: "#222222"
+  }
+};
+
+const ThemeContextt = React.createContext(themes.light);
+
+function Apppp() {
+  return (
+    <ThemeContextt.Provider value={themes.dark}>
+      <Toolbar />
+    </ThemeContextt.Provider>
+  );
+}
+
+function Toolbar(props) {
+  return (
+    <div>
+      <ThemedButton />
+    </div>
+  );
+}
+
+function ThemedButton() {
+  const theme = useContext(ThemeContextt);
+  return (
+    <button style={{ background: theme.background, color: theme.foreground }}>
+      I am styled by theme context!
+    </button>
+  );
+}
+//root.render(<Apppp/>)
+const initialState = {count: 0};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return {count: state.count + 1};
+    case 'decrement':
+      return {count: state.count - 1};
+    default:
+      throw new Error();
+  }
+}
+
+function Counter2() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  return (
+    <>
+      Count: {state.count}
+      <button onClick={() => dispatch({type: 'decrement'})}>-</button>
+      <button onClick={() => dispatch({type: 'increment'})}>+</button>
+    </>
+  );
+}
+//root.render(<Counter2/>)
+
+//transition
+function Apppp2() {
+  const [isPending, startTransition] = useTransition();
+  const [count, setCount] = useState(0);
+  
+  function handleClick() {
+    startTransition(() => {
+      setCount(c => c + 1);
+    })
+  }
+
+  return (
+    <div>
+      {isPending}
+      <button onClick={handleClick}>{count}</button>
+    </div>
+  );
+}
+//root.render(<Apppp2/>)
+
+function Checkbox() {
+  const id = useId();
+  return (
+    <>
+      <label htmlFor={id}>Do you like React?</label>
+      <input id={id} type="checkbox" name="react"/>
+    </>
+  );
+};
+function NameFields() {
+  const id = useId();
+  return (
+    <div>
+      <label htmlFor={id + '-firstName'}>First Name</label>
+      <div>
+        <input id={id + '-firstName'} type="text" />
+      </div>
+      <label htmlFor={id + '-lastName'}>Last Name</label>
+      <div>
+        <input id={id + '-lastName'} type="text" />
+      </div>
+    </div>
+  );
+}
+//root.render(<NameFields/>)
+
+function Examplee() {
+  const [count, setCount] = useState(0);
+
+  function handleAlertClick() {
+    setTimeout(() => {
+      alert('You clicked on: ' + count);
+    }, 3000);
+  }
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+      <button onClick={handleAlertClick}>
+        Show alert
+      </button>
+    </div>
+  );
+}
+root.render(<Examplee/>)
 //root.render(element);
 
 // const root = ReactDOM.createRoot(document.getElementById('root'));
